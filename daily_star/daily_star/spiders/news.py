@@ -4,8 +4,8 @@ from pymongo import MongoClient
 import datetime
 import csv
 
-# client = MongoClient("mongodb+srv://antu_roy_chow:ryZ2rxvRg1eXKI3r@anturoychowdhur.87lt0.mongodb.net/")
-# db = client.scrapy
+client = MongoClient("mongodb+srv://antu_roy_chow:ryZ2rxvRg1eXKI3r@anturoychowdhur.87lt0.mongodb.net/")
+db = client.scrapy
 news_items = []
 
 class NewsSpider(scrapy.Spider):
@@ -41,6 +41,8 @@ class NewsSpider(scrapy.Spider):
         newsDetails["body"] = article_body
         news_items.append(newsDetails)
         
+        db.news.insert_one(newsDetails)
+        self.log(f"Inserted item into MongoDB: {newsDetails['title']}")
 
         if news_items:
             filename = "home_page.csv"
