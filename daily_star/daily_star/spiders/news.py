@@ -2,6 +2,7 @@ import scrapy
 from pathlib import Path
 from pymongo import MongoClient
 import datetime
+import csv
 
 # client = MongoClient("mongodb+srv://antu_roy_chow:ryZ2rxvRg1eXKI3r@anturoychowdhur.87lt0.mongodb.net/")
 # db = client.scrapy
@@ -20,14 +21,26 @@ class NewsSpider(scrapy.Spider):
 
 
     def parse(self, response):
-        page = response.url.split("/")[-2]
-        filename = f"news-{page}.html"
-        # Path(filename).write_bytes(response.body)
-        self.log(f"Saved file {filename}")
         
         cards = response.css(".title")
+        news_items = []
+
         for card in cards:
+            pref = "https://www.thedailystar.net"
             newsDetails = {}
             newsDetails["title"] = card.css("a::text").get()
-            newsDetails["Link"] = card.css("a").attrib["href"]
-            yield newsDetails
+            suff = card.css("a").attrib["href"]
+            newsDetails["Link"] = pref + suff
+            news_items.append(newsDetails)
+
+        if news_items:
+            filename = "1st_page.csv"
+            with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
+                fieldnames = ["title", "Link"]
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+                writer.writeheader()
+                for item in news_items:
+                    writer.writerow(item)
+
+            self.log(f"Saved data to {filename}")
